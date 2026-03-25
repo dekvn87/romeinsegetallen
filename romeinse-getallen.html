@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arabisch naar Romeins</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f5f4f0;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      color: #1a1a1a;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      font-size: 24px;
+      text-align: center;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      background: #fafafa;
+      color: #1a1a1a;
+      outline: none;
+      transition: border-color 0.15s;
+      margin-bottom: 1.5rem;
+    }
+
+    input[type="number"]:focus {
+      border-color: #7F77DD;
+      box-shadow: 0 0 0 3px #7F77DD22;
+    }
+
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { opacity: 1; }
+
+    .result-box {
+      background: #f5f4f0;
+      border-radius: 12px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      min-height: 110px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .result-roman {
+      font-size: 40px;
+      font-weight: 500;
+      letter-spacing: 3px;
+      color: #1a1a1a;
+    }
+
+    .result-hint {
+      font-size: 13px;
+      color: #888;
+      margin-top: 6px;
+    }
+
+    .breakdown {
+      font-size: 13px;
+      color: #888;
+      text-align: center;
+      min-height: 20px;
+      margin-bottom: 1.5rem;
+    }
+
+    .error {
+      color: #D85A30;
+      font-size: 14px;
+      text-align: center;
+      margin-bottom: 1rem;
+      min-height: 20px;
+    }
+
+    .quick-label {
+      font-size: 12px;
+      color: #aaa;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .quick-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .quick-btns button {
+      font-size: 13px;
+      padding: 5px 14px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: #fff;
+      color: #555;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .quick-btns button:hover {
+      background: #f0efe9;
+      color: #1a1a1a;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Arabisch naar Romeins</h1>
+
+    <input type="number" id="numInput" min="1" max="3999" placeholder="Voer een getal in (1–3999)" autofocus />
+
+    <div class="result-box">
+      <div class="result-roman" id="result">—</div>
+      <div class="result-hint" id="hint"></div>
+    </div>
+
+    <div class="breakdown" id="breakdown"></div>
+    <div class="error" id="error"></div>
+
+    <p class="quick-label">Voorbeelden</p>
+    <div class="quick-btns">
+      <button onclick="setVal(4)">4</button>
+      <button onclick="setVal(9)">9</button>
+      <button onclick="setVal(42)">42</button>
+      <button onclick="setVal(399)">399</button>
+      <button onclick="setVal(1066)">1066</button>
+      <button onclick="setVal(1994)">1994</button>
+      <button onclick="setVal(2025)">2025</button>
+      <button onclick="setVal(3999)">3999</button>
+    </div>
+  </div>
+
+  <script>
+    const vals = [
+      [1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],
+      [100,'C'],[90,'XC'],[50,'L'],[40,'XL'],
+      [10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']
+    ];
+
+    function toRoman(n) {
+      let result = '', steps = [];
+      for (const [v, s] of vals) {
+        while (n >= v) {
+          result += s;
+          steps.push(s + ' (' + v + ')');
+          n -= v;
+        }
+      }
+      return { roman: result, steps };
+    }
+
+    function setVal(n) {
+      document.getElementById('numInput').value = n;
+      convert();
+    }
+
+    function convert() {
+      const raw = document.getElementById('numInput').value.trim();
+      const resultEl = document.getElementById('result');
+      const hintEl = document.getElementById('hint');
+      const breakdownEl = document.getElementById('breakdown');
+      const errorEl = document.getElementById('error');
+
+      errorEl.textContent = '';
+      breakdownEl.textContent = '';
+      hintEl.textContent = '';
+
+      if (raw === '') { resultEl.textContent = '—'; return; }
+
+      const n = parseInt(raw);
+      if (isNaN(n) || n < 1 || n > 3999) {
+        resultEl.textContent = '—';
+        errorEl.textContent = 'Voer een getal in tussen 1 en 3999.';
+        return;
+      }
+
+      const { roman, steps } = toRoman(n);
+      resultEl.textContent = roman;
+      hintEl.textContent = n.toLocaleString('nl-NL');
+      breakdownEl.textContent = steps.join(' + ');
+    }
+
+    document.getElementById('numInput').addEventListener('input', convert);
+  </script>
+</body>
+</html>
